@@ -53,6 +53,7 @@ public class BaseAccountCRUD implements BankInterface {
         public void getTransactionHistory(int acN) {
             baseAccount = accounts.get(acN);
             if(baseAccount != null){
+                System.out.println("Account no: " + acN);
                 baseAccount.getTransactionsHistory();
             }
         }
