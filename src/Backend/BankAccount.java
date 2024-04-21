@@ -8,6 +8,14 @@ public class BankAccount {
     private String accountType;
     private double balance;
 
+    public BankAccount(){
+        accountHoldersName = "";
+        accountType = "C";
+        balance = 0;
+
+
+    }
+
     public BankAccount(String accountHoldersName, String accountType, double initialBalance) {
         setAccountHoldersName(accountHoldersName);
         setAccountType(accountType);
