@@ -5,34 +5,50 @@ import Database.JDBC;
 
 import java.sql.*;
 import java.util.List;
+import java.sql.Date;
 
 public class AccountDAO implements BankInterface<BankAccount> {
 
-    private int accountNumber = 1000;
+
     Connection con = JDBC.getConnection();
+    long millsec = System.currentTimeMillis();
+    Date date = new Date(millsec);
 
     public AccountDAO(){
-        this.accountNumber++;
 
     }
     @Override
     public void saveAccount(BankAccount bankAccount) {
 
-        String insertRecord = "insert into Accounts (accountNumber, accountHoldersName, accountType, balance) values (?,?,?, ?)";
+        String insertRecord = "insert into Accounts (accountHoldersName, accountType, balance) values (?,?,?)";
+        String insertTrans = "insert into Transactions (description, amount, date) values ( ? , ?, ?)";
 
-        try{
-            PreparedStatement ps = con.prepareStatement(insertRecord);
-            ps.setInt(1, accountNumber);
-            ps.setString(2, bankAccount.getAccountHoldersName());
-            ps.setString(3, bankAccount.getAccountType());
-            ps.setDouble(4, bankAccount.getBalance());
-            ps.executeUpdate();
-        }
-        catch (Exception ex){
-            ex.printStackTrace();
-        }
+//TODO fix if exists account in the database
+//        if (!ifExists(bankAccount)) {
 
-    }
+            try {
+                PreparedStatement ps = con.prepareStatement(insertRecord);
+                ps.setString(1, bankAccount.getAccountHoldersName());
+                ps.setString(2, bankAccount.getAccountType());
+                ps.setDouble(3, bankAccount.getBalance());
+                ps = con.prepareStatement(insertTrans);
+
+                ps.setString(1, "Int Balance");
+                ps.setDouble(2, bankAccount.getBalance());
+                ps.setDate(3, date );
+                ps.executeUpdate();
+
+                System.out.println("Account saved!");
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            //TODO fix if exists account in database
+//        }
+//        else{
+//            System.out.println("Account already exists");
+//        }
+
+        }
 
 
     @Override
@@ -53,9 +69,12 @@ public class AccountDAO implements BankInterface<BankAccount> {
     }
 
     @Override
-    public void deposit(int accountNumber, double amount) {
+    public void deposit(int acn, double amount) {
+        double newBalance = 0;
         try (Statement stm = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE)){
-            ResultSet rs = stm.executeQuery("select ID, balance from Accounts");
+            ResultSet rs = stm.executeQuery("select accountNumber, balance from Accounts");
+            String insertTrans = "insert into Transactions (description, amount, date) values ( ? , ?, ?)";
+
 
             while (rs.next()){
                         if( amount <= 0){
@@ -63,14 +82,20 @@ public class AccountDAO implements BankInterface<BankAccount> {
                         }
 
                         int id = rs.getInt(1);
-                        if (id == accountNumber) {
+                        if (id == acn) {
                             double balance = rs.getDouble("balance");
-                            rs.updateDouble("balance", balance + amount);
+                            newBalance = balance + amount;
+                            rs.updateDouble("balance", newBalance);
                             rs.updateRow();
                         }
                         else{
                             System.out.println("Account not found");
                         }
+                        PreparedStatement ps = con.prepareStatement(insertTrans);
+                        ps.setString(1, "Deposit");
+                        ps.setDouble(2,amount);
+                        ps.setDate(3, date);
+                        ps.executeUpdate();
                 break;
             }
         } catch (SQLException throwables) {
@@ -130,10 +155,6 @@ public class AccountDAO implements BankInterface<BankAccount> {
                 double bal = rs.getDouble(5);
                 String output = String.format("%-5s %7s %15s %24s %15s", id, acN, acHN, acT, bal);
                 System.out.println(output);
-//                System.out.println(
-//                        "ID:" + id + "\t\tAC/N:" + acN + "\t\tACH/N:" +
-//                                acHN + "\t\tAC/T:" + acT + "\t\tBalance:" + bal
-//                );
             }
         }
 
@@ -144,21 +165,21 @@ public class AccountDAO implements BankInterface<BankAccount> {
 
     @Override
     public boolean ifExists(BankAccount bankAccount) {
-        boolean flag = false;
         try(Statement stm = con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE)){
             ResultSet rs = stm.executeQuery("Select accountHoldersName from Accounts");
 
             while (rs.next()){
+
                 if(
-                bankAccount.getAccountHoldersName() == rs.getString("accountHoldersName")){
-                    flag = true;
+                bankAccount.getAccountHoldersName() != rs.getString("accountHoldersName")){
+                    return true;
                 }
                 break;
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-        return flag;
+        return false;
     }
 
     @Override

@@ -7,9 +7,7 @@ public class BankingDataBase {
     public static void main(String[] args) {
         AccountDAO account = new AccountDAO();
         BankAccount bankAccount = new BankAccount();
-        account.closeAccount(2);
-        account.printAllAccounts();
-
+        account.deposit(1000, 4000);
     }
 }
 
