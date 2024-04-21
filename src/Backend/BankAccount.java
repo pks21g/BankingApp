@@ -1,15 +1,24 @@
 package Backend;
 
 public class BankAccount {
+
+
+    private int accountNumber = 1000;
     private String accountHoldersName;
     private String accountType;
     private double balance;
 
-    public BankAccount(String accountHoldersName, String accountType, double balance) {
+    public BankAccount(String accountHoldersName, String accountType, double initialBalance) {
         setAccountHoldersName(accountHoldersName);
         setAccountType(accountType);
-        setBalance(balance);
+        setBalance(initialBalance);
+        accountNumber = getAccountNumber();
     }
+
+    public int getAccountNumber() {
+        return accountNumber++;
+    }
+
 
     public String getAccountHoldersName() {
         return accountHoldersName;
@@ -32,13 +41,13 @@ public class BankAccount {
     }
 
     public void setBalance(double balance) {
-        this.balance = balance;
+        this.balance += balance;
     }
 
     @Override
     public String toString() {
         return
-                "Account holders name: " + accountHoldersName +
+                "Account number: + accountNumber | Account holders name: " + accountHoldersName +
                 "| Account type: " + accountType +
                 "| Balance: " + balance;
     }

@@ -1,14 +1,13 @@
 package BankInterface;
 
-public interface BankInterface {
-    void createAccount(String acHolderName, String acType, double initialDeposit);
-    boolean deposit(int acN, double amount);
-    boolean withdraw(int acN, double amount);
-    boolean deleteAccount(int accountNumber);
-    void getAccountInfo(int accountNumber);
-    void getBalance(int acN);
-    void getTransactionHistory(int acN);
-
+public interface BankInterface<T> {
+    void saveAccount(T t);
+    void updateAccount( String accountHolderName, T t);
+    void deleteAccount(T t);
+    void deposit(int accountNumber, double amount);
+    void withdraw(int accountNumber, double amount);
+    void printAllAccounts();
+    boolean ifExists(T t);
 }
 
 
